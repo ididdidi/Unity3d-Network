@@ -401,6 +401,6 @@ When the method is called, the url is converted to the path to the file, and if 
 I have created a separate repository with [examples](https://github.com/mofrison/Unity3d-download-resources) so that you can test them.
 You can also use Network for **Unity3d** in your project by adding [this repository](https://github.com/mofrison/Unity3d-Network) as a [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules):
 
-	git submodule add https://github.com/mofrison/global-signals
+	git submodule add https://github.com/mofrison/Unity3d-Network
 
 Thank you for reading to the end, I hope this will be useful to you :)
