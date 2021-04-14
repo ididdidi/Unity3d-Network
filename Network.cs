@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace ru.mofrison.Network
+namespace ru.mofrison.Unity3d
 {
     public static class Network
     {

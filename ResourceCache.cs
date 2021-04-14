@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using UnityEngine;
 
-namespace ru.mofrison.Network
+namespace ru.mofrison.Unity3d
 {
     public static class ResourceCache
     {
