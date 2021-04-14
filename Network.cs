@@ -84,7 +84,7 @@ namespace ru.mofrison.Network
 
         public static async Task<Texture2D> GetTexture(string url, CancellationTokenSource cancelationToken, System.Action<float> progress = null, bool caching = true)
         {
-            string path = await url.GetCachedPath();
+            string path = await url.GetPathOrUrl();
             bool isCached = path.Contains("file://");
             UnityWebRequest request = UnityWebRequestTexture.GetTexture(path);
 
@@ -114,7 +114,7 @@ namespace ru.mofrison.Network
 
         public static async Task<AudioClip> GetAudioClip(string url, CancellationTokenSource cancelationToken, System.Action<float> progress = null, bool caching = true, AudioType audioType = AudioType.OGGVORBIS)
         {
-            string path = await url.GetCachedPath();
+            string path = await url.GetPathOrUrl();
             bool isCached = path.Contains("file://");
             UnityWebRequest request = UnityWebRequestMultimedia.GetAudioClip(path, audioType);
         
@@ -146,7 +146,7 @@ namespace ru.mofrison.Network
 
         public static async Task<string> GetVideoStream(string url, CancellationTokenSource cancelationToken, System.Action<float> progress = null, bool caching = true)
         {
-            string path = await url.GetCachedPath();
+            string path = await url.GetPathOrUrl();
             if (!path.Contains("file://"))
             {
                 AsyncOperation cachingVideo = async delegate {
@@ -245,7 +245,7 @@ namespace ru.mofrison.Network
             else { throw new Exception("[Netowrk] error: couldn't extract hash from manifest."); }
         }
 
-        private static async Task<string> GetCachedPath(this string url)
+        private static async Task<string> GetPathOrUrl(this string url)
         {
             string path = url.ConvertToCachedPath();
             if (File.Exists(path)) {
