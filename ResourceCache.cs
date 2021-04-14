@@ -8,6 +8,8 @@ namespace ru.mofrison.Network
         private const float MIB = 1048576f;
         private static string cachingDirectory = "data";
 
+        public static string CachingDirectory { get => cachingDirectory; }
+
         public static void ConfiguringCaching(string directoryName)
         {
             cachingDirectory = directoryName;
