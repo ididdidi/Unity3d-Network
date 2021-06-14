@@ -249,13 +249,16 @@ namespace ru.mofrison.Unity3d
         {
             string path = url.ConvertToCachedPath();
             if (File.Exists(path)) {
-                try
+                if (Application.internetReachability != NetworkReachability.NotReachable)
                 {
-                    if (new FileInfo(path).Length != await GetSize(url)) { return url; }
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning("[Netowrk] error: " + e.Message); 
+                    try
+                    {
+                        if (new FileInfo(path).Length != await GetSize(url)) { return url; }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning("[Netowrk] error: " + e.Message);
+                    }
                 }
                 return "file://" + path;
             }

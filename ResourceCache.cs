@@ -23,16 +23,16 @@ namespace ru.mofrison.Unity3d
 
         public static bool CheckFreeSpace(float sizeInBytes)
         {
-#if UNITY_EDITOR_WIN
+//#if UNITY_EDITOR_WIN
             var logicalDrive = Path.GetPathRoot(Application.persistentDataPath);
             var availableSpace = SimpleDiskUtils.DiskUtils.CheckAvailableSpace(logicalDrive);
-#elif UNITY_EDITOR_OSX
-        var availableSpace = SimpleDiskUtils.DiskUtils.CheckAvailableSpace();
-#elif UNITY_IOS
-        var availableSpace = SimpleDiskUtils.DiskUtils.CheckAvailableSpace();
-#elif UNITY_ANDROID
-        var availableSpace = SimpleDiskUtils.DiskUtils.CheckAvailableSpace(true);
-#endif
+//#elif UNITY_EDITOR_OSX
+//        var availableSpace = SimpleDiskUtils.DiskUtils.CheckAvailableSpace();
+//#elif UNITY_IOS
+//        var availableSpace = SimpleDiskUtils.DiskUtils.CheckAvailableSpace();
+//#elif UNITY_ANDROID
+//        var availableSpace = SimpleDiskUtils.DiskUtils.CheckAvailableSpace(true);
+//#endif
             return availableSpace > sizeInBytes / MIB;
         }
 
