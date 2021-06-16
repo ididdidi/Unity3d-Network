@@ -149,20 +149,21 @@ namespace ru.mofrison.Unity3d
             string path = await url.GetPathOrUrl();
             if (!path.Contains("file://"))
             {
-                AsyncOperation cachingVideo = async delegate {
-                    try
-                    {
+                try
+                {
+                    AsyncOperation cachingVideo = async delegate {
+
                         if (caching && ResourceCache.CheckFreeSpace(await GetSize(url)))
                         {   
                             ResourceCache.Caching(url, await GetData(url, cancelationToken, progress));
                         }
-                    }
-                    catch (System.Exception e)
-                    {
-                        Debug.LogWarning("[Netowrk] error: " + e.Message);
-                    }
-                };
-                cachingVideo();
+                    };
+                    cachingVideo();
+                }
+                catch (System.Exception e)
+                {
+                    throw new Exception("[Netowrk] error: " + e.Message + " " + path);
+                }
                 return url;
             }
             else { return path; }
