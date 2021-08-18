@@ -38,7 +38,8 @@ namespace ru.mofrison.Unity3d
                     await Task.Yield();
                 }
             }
-            progress?.Invoke(1f);
+
+            if (!request.isNetworkError) { progress?.Invoke(1f); }
             return request;
         }
 
@@ -149,21 +150,20 @@ namespace ru.mofrison.Unity3d
             string path = await url.GetPathOrUrl();
             if (!path.Contains("file://"))
             {
-                try
-                {
-                    AsyncOperation cachingVideo = async delegate {
-
+                AsyncOperation cachingVideo = async delegate {
+                    try
+                    {
                         if (caching && ResourceCache.CheckFreeSpace(await GetSize(url)))
                         {   
                             ResourceCache.Caching(url, await GetData(url, cancelationToken, progress));
                         }
-                    };
-                    cachingVideo();
-                }
-                catch (System.Exception e)
-                {
-                    throw new Exception("[Netowrk] error: " + e.Message + " " + path);
-                }
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogWarning("[Netowrk] error: " + e.Message);
+                    }
+                };
+                cachingVideo();
                 return url;
             }
             else { return path; }
@@ -250,16 +250,13 @@ namespace ru.mofrison.Unity3d
         {
             string path = url.ConvertToCachedPath();
             if (File.Exists(path)) {
-                if (Application.internetReachability != NetworkReachability.NotReachable)
+                try
                 {
-                    try
-                    {
-                        if (new FileInfo(path).Length != await GetSize(url)) { return url; }
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogWarning("[Netowrk] error: " + e.Message);
-                    }
+                    if (new FileInfo(path).Length != await GetSize(url)) { return url; }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning("[Netowrk] error: " + e.Message); 
                 }
                 return "file://" + path;
             }
