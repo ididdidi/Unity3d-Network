@@ -145,28 +145,42 @@ namespace ru.mofrison.Unity3d
 
         private delegate void AsyncOperation();
 
-        public static async Task<string> GetVideoStream(string url, CancellationTokenSource cancelationToken, System.Action<float> progress = null, bool caching = true)
+        public static async Task<string> GetVideoStream(string url, CancellationTokenSource cancelationToken, System.Action<float> progress = null, bool caching = true, bool preload = false)
         {
+            if (!caching) return url;
             string path = await url.GetPathOrUrl();
             if (!path.Contains("file://"))
             {
-                AsyncOperation cachingVideo = async delegate {
-                    try
-                    {
-                        if (caching && ResourceCache.CheckFreeSpace(await GetSize(url)))
-                        {   
-                            ResourceCache.Caching(url, await GetData(url, cancelationToken, progress));
-                        }
-                    }
-                    catch (System.Exception e)
-                    {
-                        Debug.LogWarning("[Netowrk] error: " + e.Message);
-                    }
-                };
-                cachingVideo();
-                return url;
+                if (preload)
+                {
+                    return await CahingData(url, cancelationToken, progress);
+                }
+                else
+                {
+                    AsyncOperation cachingVideo = async delegate {
+                        await CahingData(url, cancelationToken);
+                    };
+                    cachingVideo();
+                    return url;
+                }
             }
             else { return path; }
+        }
+
+        private static async Task<string> CahingData(string url, CancellationTokenSource cancelationToken, System.Action<float> progress = null)
+        {
+            try
+            {
+                if (ResourceCache.CheckFreeSpace(await GetSize(url)))
+                {
+                    return ResourceCache.Caching(url, await GetData(url, cancelationToken, progress));
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[Netowrk] error: " + e.Message);
+            }
+            return url;
         }
 
         public static async Task<AssetBundle> GetAssetBundle(string url, CancellationTokenSource cancelationToken, System.Action<float> progress = null, bool caching = true)
@@ -265,8 +279,7 @@ namespace ru.mofrison.Unity3d
 
         public class Exception : System.Exception
         {
-            public Exception(string message) : base(message)
-            { }
+            public Exception(string message) : base(message) { }
         }
     }
 }

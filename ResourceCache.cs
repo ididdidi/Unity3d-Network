@@ -36,9 +36,9 @@ namespace ru.mofrison.Unity3d
             return availableSpace > sizeInBytes / MIB;
         }
 
-        public static void Caching(string url, byte[] data)
+        public static string Caching(string url, byte[] data)
         {
-            if (url.Contains("file://")) return;
+            if (url.Contains("file://")) return url;
 
             if (CheckFreeSpace(data.Length))
             {
@@ -51,6 +51,7 @@ namespace ru.mofrison.Unity3d
                 }
                 dirInfo.CreateSubdirectory(Directory.GetParent(path).FullName);
                 File.WriteAllBytes(path, data);
+                return path;
             }
             else { throw new Exception("[Caching] error: Not available space to download " + data.Length / MIB + "Mb"); }
         }
