@@ -28,9 +28,9 @@ namespace ru.mofrison.Unity3d
                 if (cancelationToken != null && cancelationToken.IsCancellationRequested)
                 {
                     request.Abort();
+                    var url = request.url;
                     request.Dispose();
-
-                    return null;
+                    throw new Exception("[Netowrk] cancel download: " + url);
                 }
                 else
                 {
@@ -187,6 +187,7 @@ namespace ru.mofrison.Unity3d
         {
             UnityWebRequest request;
             CachedAssetBundle assetBundleVersion = await GetAssetBundleVersion(url);
+            
             if (Caching.IsVersionCached(assetBundleVersion) || (caching && ResourceCache.CheckFreeSpace(await GetSize(url))))
             {
                 request = UnityWebRequestAssetBundle.GetAssetBundle(url, assetBundleVersion, 0);
