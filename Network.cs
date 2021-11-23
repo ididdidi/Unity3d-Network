@@ -93,7 +93,7 @@ namespace ru.mofrison.Unity3d
             if (uwr != null && !uwr.isHttpError && !uwr.isNetworkError)
             {
                 Texture2D texture = DownloadHandlerTexture.GetContent(uwr);
-                texture.name = Path.GetFileName(uwr.url);
+                texture.name = Path.GetFileNameWithoutExtension(uwr.url);
                 if (caching && !isCached) 
                 {
                     try
@@ -123,7 +123,7 @@ namespace ru.mofrison.Unity3d
             if (uwr != null && !uwr.isHttpError && !uwr.isNetworkError)
             {
                 AudioClip audioClip = DownloadHandlerAudioClip.GetContent(uwr);
-                audioClip.name = Path.GetFileName(uwr.url);
+                audioClip.name = Path.GetFileNameWithoutExtension(uwr.url);
                 if (caching && !isCached)
                 {
                     try
