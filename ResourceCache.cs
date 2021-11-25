@@ -53,7 +53,7 @@ namespace ru.mofrison.Unity3d
                 File.WriteAllBytes(path, data);
                 return path;
             }
-            else { throw new Exception("[Caching] error: Not available space to download " + data.Length / MIB + "Mb"); }
+            else { throw new Exception(string.Format("ResourceCache.Caching - Not available space to download {0}Mb", data.Length / MIB)); }
         }
 
         public static string ConvertToCachedPath(this string url)
@@ -67,12 +67,12 @@ namespace ru.mofrison.Unity3d
                 }
                 else
                 {
-                    throw new Exception("[Caching] error: Url address was entered incorrectly " + url); ;
+                    throw new Exception(string.Format("ResourceCache.ConvertToCachedPath - Url address was entered incorrectly {0}", url)); ;
                 }
             }
             catch (System.UriFormatException e)
             {
-                throw new Exception("[Caching] error: " + url + " " + e.Message);
+                throw new Exception(string.Format("ResourceCache.ConvertToCachedPath - {0} {1}", url, e.Message));
             }
         }
 

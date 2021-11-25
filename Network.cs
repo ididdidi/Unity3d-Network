@@ -30,7 +30,7 @@ namespace ru.mofrison.Unity3d
                     request.Abort();
                     var url = request.url;
                     request.Dispose();
-                    throw new Exception("[Netowrk] cancel download: " + url);
+                    throw new Exception(string.Format("Netowrk.SendWebRequest - cancel download: {0}", url));
                 }
                 else
                 {
@@ -53,7 +53,7 @@ namespace ru.mofrison.Unity3d
             }
             else
             {
-                throw new Exception("[Netowrk] error: " + request.error + " " + url);
+                throw new Exception(string.Format("Netowrk.GetSize - {0} {1}", request.error, url));
             }
         }
 
@@ -66,7 +66,7 @@ namespace ru.mofrison.Unity3d
             }
             else
             {
-                throw new Exception("[Netowrk] error: " + uwr.error + " " + uwr.url);
+                throw new Exception(string.Format("Netowrk.GetText - {0} {1}", uwr.error, uwr.url));
             }
         }
 
@@ -79,7 +79,7 @@ namespace ru.mofrison.Unity3d
             }
             else
             {
-                throw new Exception("[Netowrk] error: " + uwr.error + " " + uwr.uri);
+                throw new Exception(string.Format("Netowrk.GetData - {0} {1}", uwr.error, uwr.url));
             }
         }
 
@@ -102,14 +102,14 @@ namespace ru.mofrison.Unity3d
                     }
                     catch (System.Exception e)
                     {
-                        Debug.LogWarning("[Netowrk] error: " + e.Message);
+                        Debug.LogWarning(string.Format("Netowrk.GetTexture - {0}", e.Message));
                     }
                 }
                 return texture;
             }
             else
             {
-                throw new Exception("[Netowrk] error: " + uwr.error + " " + uwr.uri);
+                throw new Exception(string.Format("Netowrk.GetTexture - {0} {1}", uwr.error, uwr.url));
             }
         }
 
@@ -132,14 +132,14 @@ namespace ru.mofrison.Unity3d
                     }
                     catch (System.Exception e)
                     {
-                        Debug.LogWarning("[Netowrk] error: " + e.Message);
+                        Debug.LogWarning(string.Format("Netowrk.GetAudioClip - {0}", e.Message));
                     }
                 }
                 return audioClip;
             }
             else
             {
-                throw new Exception("[Netowrk] error: " + uwr.error + " " + uwr.uri);
+                throw new Exception(string.Format("Netowrk.GetAudioClip - {0} {1}", uwr.error, uwr.url));
             }
         }
 
@@ -178,7 +178,7 @@ namespace ru.mofrison.Unity3d
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning("[Netowrk] error: " + e.Message);
+                Debug.LogWarning(string.Format("Netowrk.CahingData - {0}", e.Message));
             }
             return url;
         }
@@ -210,7 +210,7 @@ namespace ru.mofrison.Unity3d
             }
             else
             {
-                throw new Exception("[Netowrk] error: " + uwr.error + " " + uwr.uri);
+                throw new Exception(string.Format("Netowrk.GetAssetBundle - {0} {1}", uwr.error, uwr.url));
             }
         }
 
@@ -221,12 +221,12 @@ namespace ru.mofrison.Unity3d
             try
             {
                 string manifest = await GetText(url + ".manifest");
-                hash = manifest.GetHash128();
+                hash = manifest.GetHash();
                 return new CachedAssetBundle(localPath, hash);
             }
             catch (Exception e)
             {
-                Debug.LogWarning("[Netowrk] error: " + e.Message);
+                Debug.LogWarning(string.Format("Netowrk.GetAssetBundleVersion - {0}", e.Message));
                 DirectoryInfo dir = new DirectoryInfo(url.ConvertToCachedPath());
                 if (dir.Exists)
                 {
@@ -248,17 +248,17 @@ namespace ru.mofrison.Unity3d
                 }
                 else
                 {
-                    throw new Exception("[Netowrk] error: Nothing was found in the cache for " + url);
+                    throw new Exception(string.Format("Netowrk.GetAssetBundleVersion - Nothing was found in the cache for {0}", url));
                 }
             }
         }
 
-        private static Hash128 GetHash128(this string str)
+        private static Hash128 GetHash(this string str)
         {
             var hashRow = str.Split("\n".ToCharArray())[5];
             var hash = Hash128.Parse(hashRow.Split(':')[1].Trim());
             if (hash.isValid && hash != default) { return hash; }
-            else { throw new Exception("[Netowrk] error: couldn't extract hash from manifest."); }
+            else { throw new Exception("Netowrk.GetHash - Couldn't extract hash from manifest."); }
         }
 
         private static async Task<string> GetPathOrUrl(this string url)
@@ -271,7 +271,7 @@ namespace ru.mofrison.Unity3d
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning("[Netowrk] error: " + e.Message); 
+                    Debug.LogWarning(string.Format("Netowrk.GetPathOrUrl - {0}", e.Message)); 
                 }
                 return "file://" + path;
             }
