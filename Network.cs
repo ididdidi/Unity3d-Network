@@ -169,18 +169,10 @@ namespace ru.mofrison.Unity3d
 
         private static async Task<string> CahingData(string url, CancellationTokenSource cancelationToken, System.Action<float> progress = null)
         {
-            try
+            if (ResourceCache.CheckFreeSpace(await GetSize(url)))
             {
-                if (ResourceCache.CheckFreeSpace(await GetSize(url)))
-                {
-                    return ResourceCache.Caching(url, await GetData(url, cancelationToken, progress));
-                }
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogWarning(string.Format("Netowrk.CahingData - {0}", e.Message));
-            }
-            return url;
+                return ResourceCache.Caching(url, await GetData(url, cancelationToken, progress));
+            } else return null;
         }
 
         public static async Task<AssetBundle> GetAssetBundle(string url, CancellationTokenSource cancelationToken, System.Action<float> progress = null, bool caching = true)
