@@ -223,18 +223,19 @@ namespace ru.mofrison.Unity3d
                 if (dir.Exists)
                 {
                     System.DateTime lastWriteTime = default;
-                    foreach (var item in dir.GetDirectories())
+                    var dirs = dir.GetDirectories();
+                    for (int i=0; i < dirs.Length; i++)
                     {
-                        if (lastWriteTime < item.LastWriteTime)
+                        if (lastWriteTime < dirs[i].LastWriteTime)
                         {
                             if (hash.isValid && hash != default) 
                             { 
                                 Directory.Delete(Path.Combine(dir.FullName, hash.ToString()), true);
                             }
-                            lastWriteTime = item.LastWriteTime;
-                            hash = Hash128.Parse(item.Name);
+                            lastWriteTime = dirs[i].LastWriteTime;
+                            hash = Hash128.Parse(dirs[i].Name);
                         }
-                        else { Directory.Delete(Path.Combine(dir.FullName, item.Name), true); }
+                        else { Directory.Delete(Path.Combine(dir.FullName, dirs[i].Name), true); }
                     }
                     return new CachedAssetBundle(localPath, hash);
                 }
