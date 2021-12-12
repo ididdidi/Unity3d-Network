@@ -62,6 +62,7 @@ namespace ru.mofrison.Unity3d
             {
                 if (!string.IsNullOrEmpty(url))
                 {
+                    if (url.Contains(Application.persistentDataPath)) { return url; }
                     var path = Path.Combine(Application.persistentDataPath, cachingDirectory + new System.Uri(url).LocalPath);
                     return path.Replace("\\", "/");
                 }
