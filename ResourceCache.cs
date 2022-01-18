@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using UnityEngine;
 
-namespace ru.mofrison.Unity3d
+namespace ru.mofrison.Unity3D
 {
     public static class ResourceCache
     {
@@ -24,8 +24,8 @@ namespace ru.mofrison.Unity3d
         public static bool CheckFreeSpace(float sizeInBytes)
         {
 #if UNITY_EDITOR_WIN
-            var logicalDrive = Path.GetPathRoot(Application.persistentDataPath);
-            var availableSpace = SimpleDiskUtils.DiskUtils.CheckAvailableSpace(logicalDrive);
+          var logicalDrive = Path.GetPathRoot(Application.persistentDataPath);
+          var availableSpace = SimpleDiskUtils.DiskUtils.CheckAvailableSpace(logicalDrive);
 #elif UNITY_EDITOR_OSX
         var availableSpace = SimpleDiskUtils.DiskUtils.CheckAvailableSpace();
 #elif UNITY_IOS
