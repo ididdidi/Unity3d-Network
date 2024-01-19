@@ -179,6 +179,12 @@ namespace ru.ididdidi.Unity3D
         {
             UnityWebRequest request;
             CachedAssetBundle assetBundleVersion = await GetAssetBundleVersion(url);
+
+            if(caching && url.Contains("file://"))
+            {
+                caching = false; 
+                Debug.LogWarning($"Caching of the file located at the {url} is rejected");
+            }
             
             if (Caching.IsVersionCached(assetBundleVersion) || (caching && ResourceCache.CheckFreeSpace(await GetSize(url))))
             {
@@ -189,7 +195,7 @@ namespace ru.ididdidi.Unity3D
                 request = UnityWebRequestAssetBundle.GetAssetBundle(url);
             }
 
-            UnityWebRequest uwr = await SendWebRequest(request, cancelationToken, Caching.IsVersionCached(assetBundleVersion) ? null : progress);
+            UnityWebRequest uwr = await SendWebRequest(request, cancelationToken);
             if (uwr != null && !uwr.isHttpError && !uwr.isNetworkError)
             {
                 AssetBundle assetBundle = DownloadHandlerAssetBundle.GetContent(uwr);

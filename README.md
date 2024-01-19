@@ -7,7 +7,7 @@ While working on the VR project **Panoramic View**, I set myself the task of mak
 In addition to images, sounds, and videos, I needed to load and position interactive elements to make transitions between locations. This could be done by using procedural generation, loading a json file with the coordinates of the transitions and the identifier of the new location. But why make a new data structure when all this is in the scenes in the most visual form. So I started looking for the possibility of loading scenes, and as it turned out, there was such a possibility. To do this, use [**AssetBundles**](https://docs.unity3d.com/ru/current/Manual/AssetBundlesIntro.html), they can be used to load many different entities into **Unity3d**, including entire scenes.
 
 The developers provided the ability to download all the resources via **AssetBundle**, but this turned out to be inefficient because it took a considerable time to unpack even small images. Therefore, to load media resources, it turned out to be optimal to use specialized methods provided by the `UnityWebRequest` class.
-The article [_Working with external resources in Unity3D_](https://habr.com/ru/post/433366/) helped me a lot to organize the loading of resources from external sources. Its author [Ichimitsu](http://haber.com/ru/users/Ishimitsu/) told me how to make this process as fast as possible, for which I am very grateful to him!
+The article [_Working with external resources in Unity3D_](https://habr.com/ru/post/433366/) helped me a lot to organize the loading of resources from external sources. Its author [@Ichimitsu](https://habr.com/ru/users/Ichimitsu/) told me how to make this process as fast as possible, for which I am very grateful to him!
 
 ## What's wrong with Coroutine
 In the standard documentation, you are offered to take out the loading process in Coroutine:
@@ -398,9 +398,9 @@ private static async Task<string> GetCachedPath(this string url)
 ```
 When the method is called, the url is converted to the path to the file, and if it is located there, its size is compared with the size of the file in the external storage. If the dimensions match, the method returns the path to the file as a string, if not, it returns the utl address.
 
-I have created a separate repository with [examples](https://github.com/mofrison/Unity3d-download-resources) so that you can test them.
-You can also use Network for **Unity3d** in your project by adding [this repository](https://github.com/mofrison/Unity3d-Network) as a [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules):
+I have created a separate repository with [examples](https://github.com/ididdidi/Unity3d-download-resources) so that you can test them.
+You can also use Network for **Unity3d** in your project by adding [this repository](https://github.com/ididdidi/Unity3d-Network) as a [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules):
 
-	git submodule add https://github.com/mofrison/Unity3d-Network
+	git submodule add https://github.com/ididdidi/Unity3d-Network
 
 Thank you for reading to the end, I hope this will be useful to you :)
