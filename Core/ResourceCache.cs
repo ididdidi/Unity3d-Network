@@ -6,7 +6,7 @@ namespace ru.ididdidi.Unity3D
     public static class ResourceCache
     {
         private const float MIB = 1048576f;
-        private static string cachingDirectory = "data";
+        private static string cachingDirectory = "cache";
 
         public static string CachingDirectory { get => cachingDirectory; }
 

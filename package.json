@@ -1,0 +1,27 @@
+{
+	"name": "ru.ididdidi.unity3d-network",
+	"version": "1.0.0",
+	"displayName": "Network",
+	"description": "Plugin allows you to upload resources from the Internet to the application.",
+	"unity": "2019.4",
+	"documentationUrl": "https://ididdidi.ru/cases/unity3d-download-resources",
+	"changelogUrl": "https://raw.githubusercontent.com/ididdidi/Unity3d-Network/master/README.md",
+	"licensesUrl": "https://raw.githubusercontent.com/ididdidi/Unity3d-Network/master/LICENSE",
+	"keywords": [
+		"Network",
+		"Download resources",
+		"Download assets"
+	],
+	"author": {
+		"name": "ididdidi",
+		"email": "ididdidi.dev@gmail.com",
+		"url": "https://ididdidi.ru/"
+	},
+	"samples": [
+	{
+		"displayName": "Network example",
+		"description": "A simple example of loading resource form Internet",
+		"path": "Samples~"
+	}
+  ]
+}

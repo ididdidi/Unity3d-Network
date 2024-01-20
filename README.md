@@ -1,63 +1,17 @@
 # Unity3d-Netowrk
-A module for unity3d that allows you to upload resources from the Internet to the application.
+Package for downloading resources from the Internet into Unity.
 
-## Prologue
-While working on the VR project **Panoramic View**, I set myself the task of making downloading content for this application as flexible and convenient as possible. The main concept was the ability to add new locations with panoramic views without updating the entire app. In **Unity3d** there is a class `UnityWebRequest` that helps to load various types of resources from the Internet.
+## Install
+You can add this repository to your Unity project using the [Package Manager](https://learn.unity.com/tutorial/the-package-manager).
+To do this, click `Window` in the top panel, select `Package Manager` in the drop-down list, in the window that opens in the upper left corner, click __`+`__ and select `Add package from git-URL...`.
+In the field that appears, paste:
 
-In addition to images, sounds, and videos, I needed to load and position interactive elements to make transitions between locations. This could be done by using procedural generation, loading a json file with the coordinates of the transitions and the identifier of the new location. But why make a new data structure when all this is in the scenes in the most visual form. So I started looking for the possibility of loading scenes, and as it turned out, there was such a possibility. To do this, use [**AssetBundles**](https://docs.unity3d.com/ru/current/Manual/AssetBundlesIntro.html), they can be used to load many different entities into **Unity3d**, including entire scenes.
+	https://github.com/ididdidi/Unity3d-Network.git
 
-The developers provided the ability to download all the resources via **AssetBundle**, but this turned out to be inefficient because it took a considerable time to unpack even small images. Therefore, to load media resources, it turned out to be optimal to use specialized methods provided by the `UnityWebRequest` class.
-The article [_Working with external resources in Unity3D_](https://habr.com/ru/post/433366/) helped me a lot to organize the loading of resources from external sources. Its author [@Ichimitsu](https://habr.com/ru/users/Ichimitsu/) told me how to make this process as fast as possible, for which I am very grateful to him!
-
-## What's wrong with Coroutine
-In the standard documentation, you are offered to take out the loading process in Coroutine:
-```csharp
-using UnityEngine;
-using UnityEngine.Networking;
-using System.Collections;
-
-public class MyBehaviour : MonoBehaviour
-{
-    void Start()
-    {
-        StartCoroutine(GetText());
-    }
-
-    IEnumerator GetText()
-    {
-        using (UnityWebRequest uwr = UnityWebRequestAssetBundle.GetAssetBundle("http://www.my-server.com/mybundle"))
-        {
-            yield return uwr.SendWebRequest();
-
-            if (uwr.result != UnityWebRequest.Result.Success)
-            {
-                Debug.Log(uwr.error);
-            }
-            else
-            {
-                // Get downloaded asset bundle
-                AssetBundle bundle = DownloadHandlerAssetBundle.GetContent(uwr);
-            }
-        }
-    }
-}
-```
-This allows other processes to run in parallel with loading, but it's no secret that Coroutine is executed in the main thread. Accordingly, such resource loading loads the main thread, and the more the thread is loaded, the slower the downloads become. I noticed this when I decided to animate the visualization of the image download progress. The second significant disadvantage of Coroutine is that the `try`-`catch`-`finally`construction does not work in them. This complicates the handling of errors, which are not uncommon when working with the network.
-
-To solve these problems, _**asynchronous methods**_will come to the rescue. In them, I took out the loading of resources from the main stream.
-
-## Asynchronous methods in C#
-An asynchronous method has the following features:
-* The method header uses the `async` modifier
-* The method contains one or more `await`expressions
-* The return type is one of the following: `void`, `Task`, `Task<T>`, `ValueTask<T>`
-
-An asynchronous method, like a normal one, can use any number of parameters or not use them at all. However, the asynchronous method cannot define parameters with the `out` and `ref` modifiers.
-
-It is also worth noting that the word `async`, which is specified in the method definition, does not automatically make the method asynchronous. It only indicates that this method can contain one or more `await` expressions.
-
-## Implementation
-To interact with the remote server, I decided to create a static class `Network` in which I defined the main methods for loading various types of resources.
+Press enter end wait for the package to download.
+  
+## Network.cs
+I created a static class `Network.cs` in which I defined the main methods for loading various types of resources.
 
 Method name                                     | Implemented function
 ------------------------------------------------|-------------------------
@@ -74,7 +28,7 @@ Method name                                     | Implemented function
 [GetCachedPath](#getcachedpath)                 | Used to get the path to the encrypted file, if any.
 
 Methods for downloading cached resources (other than GetAssetBundle) use methods provided by the **ResourceCache** static class.
-**ResourceCache** helps you store data in your device's memory and interact with it. It is discussed in detail in the [Unity3d: Saving data on the device]({{site.url}}/cases/unity3d-caching-resources).
+**ResourceCache** helps you store data in your device's memory and interact with it. It is discussed in detail in the [Unity3d: Saving data on the device](https://ididdidi.ru/cases/unity3d-caching-resources).
 
 ### SendWebRequest
 The main one for the `Network` class is the private asynchronous method `WebRequest`, which is used to load data from the network. As arguments, it accepts a pre-prepared `Unity Web Request`, `CancellationTokenSource`, `Action<float>`.
@@ -275,7 +229,7 @@ public static async Task<string> GetVideoStream(string url, CancellationTokenSou
 ```
 The method first checks whether this file is in the device memory. If a file with the same name and size is located in a similar local path, the path to the file on the device is returned. If there is no such file, the file url is returned and the file upload process is started on the device in parallel. The download takes place using the `GetData` method in the predefined `AsyncOperation` delegate, so as not to wait for the video to load on the device. I tried running the data download in a separate `Task`, using `Task.Run ()`, but it didn't work. In general, this approach of downloading and playing videos does not claim to be the most effective, but I have not yet been able to come up with a better one. The file address is returned as a string, and it is used to play streaming videos using `VideoPlayer`.
  
-> **Note:** For a video file to play successfully, it must match the streaming video format, and the web server you are connecting to must match the [**HLS**(HTTP Live Streaming)](https://ru.wikipedia.org/wiki/HLS) protocol.
+> **Note:** For a video file to play successfully, it must match the streaming video format, and the web server you are connecting to must match the [**HLS**(HTTP Live Streaming)](https://en.wikipedia.org/wiki/HTTP_Live_Streaming) protocol.
 
 
 ### GetAssetBundle
@@ -285,6 +239,13 @@ public static async Task<AssetBundle> GetAssetBundle(string url, CancellationTok
 {
     UnityWebRequest request;
     CachedAssetBundle cachedAssetBundle = await GetCachedAssetBundle(url);
+	
+	if(caching && url.Contains("file://"))
+    {
+        caching = false; 
+        Debug.LogWarning($"Caching of the file located at the {url} is rejected");
+    }
+	
     if (Caching.IsVersionCached(cachedAssetBundle) || (caching && ResourceCache.CheckFreeSpace(await GetSize(url))))
     {
         request = UnityWebRequestAssetBundle.GetAssetBundle(url, cachedAssetBundle, 0);
@@ -397,10 +358,5 @@ private static async Task<string> GetCachedPath(this string url)
 }
 ```
 When the method is called, the url is converted to the path to the file, and if it is located there, its size is compared with the size of the file in the external storage. If the dimensions match, the method returns the path to the file as a string, if not, it returns the utl address.
-
-I have created a separate repository with [examples](https://github.com/ididdidi/Unity3d-download-resources) so that you can test them.
-You can also use Network for **Unity3d** in your project by adding [this repository](https://github.com/ididdidi/Unity3d-Network) as a [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules):
-
-	git submodule add https://github.com/ididdidi/Unity3d-Network
 
 Thank you for reading to the end, I hope this will be useful to you :)

@@ -66,7 +66,7 @@ namespace ru.ididdidi.Unity3D
             }
             else
             {
-                throw new Exception(string.Format("Netowrk.GetText - {0} {1}", uwr.error, uwr.url));
+                throw new Exception(string.Format("Netowrk.GetText - {0} {1}", uwr?.error, uwr?.url));
             }
         }
 
@@ -79,7 +79,7 @@ namespace ru.ididdidi.Unity3D
             }
             else
             {
-                throw new Exception(string.Format("Netowrk.GetData - {0} {1}", uwr.error, uwr.url));
+                throw new Exception(string.Format("Netowrk.GetData - {0} {1}", uwr?.error, uwr?.url));
             }
         }
 
@@ -109,7 +109,7 @@ namespace ru.ididdidi.Unity3D
             }
             else
             {
-                throw new Exception(string.Format("Netowrk.GetTexture - {0} {1}", uwr.error, uwr.url));
+                throw new Exception(string.Format("Netowrk.GetTexture - {0} {1}", uwr?.error, uwr?.url));
             }
         }
 
@@ -139,7 +139,7 @@ namespace ru.ididdidi.Unity3D
             }
             else
             {
-                throw new Exception(string.Format("Netowrk.GetAudioClip - {0} {1}", uwr.error, uwr.url));
+                throw new Exception(string.Format("Netowrk.GetAudioClip - {0} {1}", uwr?.error, uwr?.url));
             }
         }
 
@@ -179,14 +179,15 @@ namespace ru.ididdidi.Unity3D
         {
             UnityWebRequest request;
             CachedAssetBundle assetBundleVersion = await GetAssetBundleVersion(url);
+            bool isCached = Caching.IsVersionCached(assetBundleVersion);
 
-            if(caching && url.Contains("file://"))
+            if (caching && url.Contains("file://"))
             {
                 caching = false; 
                 Debug.LogWarning($"Caching of the file located at the {url} is rejected");
             }
             
-            if (Caching.IsVersionCached(assetBundleVersion) || (caching && ResourceCache.CheckFreeSpace(await GetSize(url))))
+            if (isCached || (caching && ResourceCache.CheckFreeSpace(await GetSize(url))))
             {
                 request = UnityWebRequestAssetBundle.GetAssetBundle(url, assetBundleVersion, 0);
             }
@@ -195,7 +196,7 @@ namespace ru.ididdidi.Unity3D
                 request = UnityWebRequestAssetBundle.GetAssetBundle(url);
             }
 
-            UnityWebRequest uwr = await SendWebRequest(request, cancelationToken);
+            UnityWebRequest uwr = await SendWebRequest(request, cancelationToken, isCached? null : progress);
             if (uwr != null && !uwr.isHttpError && !uwr.isNetworkError)
             {
                 AssetBundle assetBundle = DownloadHandlerAssetBundle.GetContent(uwr);
@@ -208,7 +209,7 @@ namespace ru.ididdidi.Unity3D
             }
             else
             {
-                throw new Exception(string.Format("Netowrk.GetAssetBundle - {0} {1}", uwr.error, uwr.url));
+                throw new Exception(string.Format("Netowrk.GetAssetBundle - {0} {1}", uwr?.error, uwr?.url));
             }
         }
 
