@@ -132,7 +132,7 @@ GameObject:
   - component: {fileID: 287508002}
   - component: {fileID: 287508001}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: DownloadManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
