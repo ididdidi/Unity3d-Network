@@ -7,10 +7,12 @@ namespace ru.ididdidi.Unity3D
 {
     public abstract class WebRequest<T> : IRequest
     {
-        protected string url;
-        protected System.Action<T> response;
+        private System.Action<T> response;
         protected System.Action<float> progress;
         protected CancellationTokenSource cancellationToken;
+
+        public string url { get; }
+        public System.Action<T> Response { get => response; }
 
         public WebRequest(string url)
         {
@@ -41,15 +43,31 @@ namespace ru.ididdidi.Unity3D
         public async Task<long> GetSize()
         {
             UnityWebRequest request = await Send(UnityWebRequest.Head(url));
-            var contentLength = request.GetResponseHeader("Content-Length");
+            string contentLength = request.GetResponseHeader("Content-Length");
             if (long.TryParse(contentLength, out long returnValue))
             {
                 return returnValue;
             }
             else
             {
-                throw new Exception(string.Format("Netowrk.GetSize - {0} {1}", request.error, url));
+                throw new Exception(string.Format("GetSize - {0} {1}", request?.error, url));
             }
+        }
+
+        public async Task<bool> IsCached()
+        {
+            return CacheService.IsCached(url.ConvertToCachedPath(), await GetSize());
+        }
+
+        public async Task<bool> TryGetFromCache()
+        {
+            string path = url.ConvertToCachedPath();
+            if (url.Contains("file://") || CacheService.IsCached(path, await GetSize()))
+            {
+                await Send();
+                return true;
+            }
+            return false;
         }
 
         protected async Task<UnityWebRequest> Send(UnityWebRequest request,  System.Action<float> progress = null)

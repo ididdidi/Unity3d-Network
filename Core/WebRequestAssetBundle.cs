@@ -34,7 +34,7 @@ namespace ru.ididdidi.Unity3D
             if (request != null)
             {
                 AssetBundle assetBundle = DownloadHandlerAssetBundle.GetContent(request);
-                response(assetBundle);
+                Response(assetBundle);
             }
         }
     }

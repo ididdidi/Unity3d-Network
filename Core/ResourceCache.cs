@@ -10,6 +10,7 @@ namespace ru.ididdidi.Unity3D
 
         public static string CachingDirectory { get => cachingDirectory; }
 
+        public static void ConfiguringCaching() => ConfiguringCaching(cachingDirectory);
         public static void ConfiguringCaching(string directoryName)
         {
             cachingDirectory = directoryName;

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace ru.ididdidi.Unity3D
@@ -16,51 +17,24 @@ namespace ru.ididdidi.Unity3D
             ResourceCache.ConfiguringCaching(cachedPath);
         }
 
-        private string materialName = "VideoMaterial";
-        private string prefabName = "RickCube";
-
-        public void DownloadData(string url, System.Action<byte[]> response)
+        public async void Download<T>(WebRequest<T> request)
         {
-            AddInDownloadQueue(url, response, () => new WebRequestData(url));
+            if(!await request.TryGetFromCache())
+            {
+                AddInDownloadQueue(request);
+            }
         }
 
-        public void DownloadText(string url, System.Action<string> response)
+        private void AddInDownloadQueue<T>(WebRequest<T> request)
         {
-            AddInDownloadQueue(url, response, () => new WebRequestText(url));
-        }
-
-        public void DownloadTexture(string url, System.Action<Texture2D> response)
-        {
-            AddInDownloadQueue(url, response, () => new WebRequestTexture(url));
-        }
-
-        public void DownloadAudioClip(string url, System.Action<AudioClip> response)
-        {
-            AddInDownloadQueue(url, response, () => new WebRequestAudioClip(url));
-        }
-
-        public void DownloadVideoClip(string url, System.Action<string> response)
-        {
-            AddInDownloadQueue<byte[]>(url, (data) => { response(url); }, () => new WebRequestData(url));
-        }
-
-        public void DownloadAssetBundle(string url, System.Action<AssetBundle> response)
-        {
-            AddInDownloadQueue(url, response, () => new WebRequestAssetBundle(url));
-        }
-
-        private delegate WebRequest<T> CreateRequest<T>();
-
-        private void AddInDownloadQueue<T>(string url, System.Action<T> response,  CreateRequest<T> createRequest)
-        {
-            Hash128 id = Hash128.Compute(url);
+            Hash128 id = Hash128.Compute(request.url);
             if (requests.TryGetValue(id, out IRequest value)) {
-                ((WebRequest<T>)value).AddResponse(response);
+                ((WebRequest<T>)value).AddResponse(request.Response);
             }
             else
             {
                 downloadQueue.Enqueue(id);
-                requests.Add(id, createRequest().AddResponse(response));
+                requests.Add(id, request);
             }
 
             DownloadResources();

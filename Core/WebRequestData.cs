@@ -11,7 +11,7 @@ namespace ru.ididdidi.Unity3D
         public override async Task Send()
         {
             UnityWebRequest request = await Send(UnityWebRequest.Get(url), progress);
-            response?.Invoke(request?.downloadHandler.data);
+            Response?.Invoke(request?.downloadHandler.data);
         }
     }
 }

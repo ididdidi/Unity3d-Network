@@ -22,7 +22,7 @@ namespace ru.ididdidi.Unity3D
             {
                 AudioClip audioClip = DownloadHandlerAudioClip.GetContent(request);
                 audioClip.name = System.IO.Path.GetFileNameWithoutExtension(request.url);
-                response(audioClip);
+                Response(audioClip);
             }
         }
     }
