@@ -1,35 +1,29 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace ru.ididdidi.Unity3D
 {
     public class DownloadManager : MonoBehaviour
     {
-        private string cachedPath = "cache";
         private Queue<Hash128> downloadQueue = new Queue<Hash128>();
         private Dictionary<Hash128, IRequest> requests = new Dictionary<Hash128, IRequest>();
         private IRequest current;
 
-        private void Awake()
+        private void Start()
         {
-            // Set the folder for storing cached data
-            ResourceCache.ConfiguringCaching(cachedPath);
+            CacheService.Caching = true;
         }
 
         public async void Download<T>(WebRequest<T> request)
         {
-            if(!await request.TryGetFromCache())
-            {
-                AddInDownloadQueue(request);
-            }
+            if (await request.IsCached()) { await request.Send(); }
+            else { AddInDownloadQueue(await request.GetVersion(), request); }
         }
 
-        private void AddInDownloadQueue<T>(WebRequest<T> request)
+        private void AddInDownloadQueue<T>(Hash128 id, WebRequest<T> request)
         {
-            Hash128 id = Hash128.Compute(request.url);
             if (requests.TryGetValue(id, out IRequest value)) {
-                ((WebRequest<T>)value).AddResponse(request.Response);
+                ((WebRequest<T>)value).AddResponseHandler(request.OnResponse);
             }
             else
             {

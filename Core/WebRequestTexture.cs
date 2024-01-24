@@ -8,15 +8,27 @@ namespace ru.ididdidi.Unity3D
     {
         public WebRequestTexture(string url) : base(url) { }
 
-        public override async Task Send()
+        protected override async Task<UnityWebRequest> GetWebResponse()
         {
-            UnityWebRequest request = await Send(UnityWebRequestTexture.GetTexture(url), progress);
-            if (request != null)
+            UnityWebRequest responce = await GetResponse(UnityWebRequestTexture.GetTexture(url), progress);
+            if (CacheService.Caching)
             {
-                Texture2D texture = DownloadHandlerTexture.GetContent(request);
-                texture.name = System.IO.Path.GetFileNameWithoutExtension(request.url);
-                Response(texture);
+                CacheService.SeveToCache(url, await GetVersion(), responce.downloadHandler.data);
             }
+            return responce;
+        }
+
+        protected override async Task<UnityWebRequest> GetCacheResponse()
+        {
+            string path = url.ConvertToCachedPath(await GetVersion());
+            return await GetResponse(UnityWebRequestTexture.GetTexture(path));
+        }
+
+        protected override void HandleResponse(UnityWebRequest response)
+        {
+            Texture2D texture = DownloadHandlerTexture.GetContent(response);
+            texture.name = System.IO.Path.GetFileNameWithoutExtension(response.url);
+            onResponse(texture);
         }
     }
 }

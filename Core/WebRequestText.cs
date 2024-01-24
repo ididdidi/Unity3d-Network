@@ -7,10 +7,25 @@ namespace ru.ididdidi.Unity3D
     {
         public WebRequestText (string url) : base(url) { }
 
-        public override async Task Send()
+        protected override async Task<UnityWebRequest> GetWebResponse()
         {
-            UnityWebRequest request = await Send(UnityWebRequest.Get(url));
-            Response?.Invoke(request?.downloadHandler.text);
+            UnityWebRequest responce = await GetResponse(UnityWebRequest.Get(url));
+            if (CacheService.Caching)
+            {
+                CacheService.SeveToCache(url, await GetVersion(), responce.downloadHandler.data);
+            }
+            return responce;
+        }
+
+        protected override async Task<UnityWebRequest> GetCacheResponse()
+        {
+            string path = url.ConvertToCachedPath(await GetVersion());
+            return await GetResponse(UnityWebRequest.Get(path));
+        }
+
+        protected override void HandleResponse(UnityWebRequest response)
+        {
+            onResponse?.Invoke(response.downloadHandler.text);
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 
 public static class CacheService
@@ -9,6 +7,7 @@ public static class CacheService
     private static string cachingDirectory = "cache";
 
     public static string CachingDirectory { get => cachingDirectory; }
+    public static bool Caching { get; set; }
 
     static CacheService() => ConfiguringCaching(cachingDirectory);
 
@@ -23,12 +22,18 @@ public static class CacheService
         UnityEngine.Caching.currentCacheForWriting = UnityEngine.Caching.AddCache(path);
     }
 
-    public static string ConvertToCachedPath(this string url)
+    public static string ConvertToCachedPath(this string url, Hash128 version)
     {
         if (!string.IsNullOrEmpty(url))
         {
-            string localPath = new System.Uri(url).LocalPath;
-            return Path.Combine(Application.persistentDataPath, $"{cachingDirectory}{localPath}").Replace("\\", "/");
+            string[] path = {
+                Application.persistentDataPath,
+                cachingDirectory,
+                Hash128.Compute(url).ToString(),
+                version.ToString(),
+                Path.GetFileName(url).Replace("\\", "/")
+            };
+            return Path.Combine(path);
         }
         else
         {
@@ -36,21 +41,40 @@ public static class CacheService
         }
     }
 
-    public static bool IsCached(string path, long size)
+    public static Hash128 GetCachedVersion(string url)
     {
-        if (File.Exists(path))
+        Hash128 version = default;
+        DirectoryInfo dir = new DirectoryInfo(url.ConvertToCachedPath(version));
+        if (dir.Exists)
         {
-            if (new FileInfo(path).Length != size) { return false; }
-            return true;
+            System.DateTime lastWriteTime = default;
+            var dirs = dir.GetDirectories();
+            for (int i = 0; i < dirs.Length; i++)
+            {
+                if (lastWriteTime < dirs[i].LastWriteTime)
+                {
+                    if (version.isValid && version != default)
+                    {
+                        Directory.Delete(Path.Combine(dir.FullName, version.ToString()), true);
+                    }
+                    lastWriteTime = dirs[i].LastWriteTime;
+                    version = Hash128.Parse(dirs[i].Name);
+                }
+                else { Directory.Delete(Path.Combine(dir.FullName, dirs[i].Name), true); }
+            }
         }
-        return false;
+        return version;
     }
 
-    public static string Caching(string url, byte[] data)
+    public static bool IsCached(string url, Hash128 version) 
+        => new FileInfo(url.ConvertToCachedPath(version)).Exists;
+
+
+    public static string SeveToCache(string url, Hash128 version, byte[] data)
     {
         if (CheckFreeSpace(data.Length))
         {
-            string path = url.ConvertToCachedPath();
+            string path = url.ConvertToCachedPath(version);
 
             DirectoryInfo dirInfo = new DirectoryInfo(Application.persistentDataPath);
             if (!dirInfo.Exists)

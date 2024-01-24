@@ -6,36 +6,34 @@ namespace ru.ididdidi.Unity3D
 {
     public class WebRequestAssetBundle : WebRequest<AssetBundle>
     {
-        private CachedAssetBundle assetBundleVersion = default;
-
         public WebRequestAssetBundle(string url) : base(url) { }
 
-        public WebRequestAssetBundle SetCached(CachedAssetBundle assetBundleVersion)
+        protected override async Task<Hash128> GetLatestVersion()
         {
-            this.assetBundleVersion = assetBundleVersion;
-            return this;
+            await new WebRequestText(url + ".manifest").AddResponseHandler((str) => {
+                var hashRow = str.Split("\n".ToCharArray())[5];
+                hash = Hash128.Parse(hashRow.Split(':')[1].Trim());
+            }).Send();
+            return hash;
         }
 
-        public override async Task Send()
-        {
-            bool isCached = false;
-            UnityWebRequest uwr;
-            if (string.IsNullOrEmpty(assetBundleVersion.name))
-            {
-                uwr = UnityWebRequestAssetBundle.GetAssetBundle(url);
-            }
-            else
-            {
-                isCached = Caching.IsVersionCached(assetBundleVersion);
-                uwr = UnityWebRequestAssetBundle.GetAssetBundle(url, assetBundleVersion);
-            }
+        private async Task<CachedAssetBundle> GetCachedAssetBundle() => new CachedAssetBundle(Hash128.Compute(url).ToString(), await GetVersion());
 
-            UnityWebRequest request = await Send(uwr, isCached ? null : progress);
-            if (request != null)
-            {
-                AssetBundle assetBundle = DownloadHandlerAssetBundle.GetContent(request);
-                Response(assetBundle);
-            }
+        public override async Task<bool> IsCached() => Caching.IsVersionCached(await GetCachedAssetBundle());
+
+        protected override async Task<UnityWebRequest> GetWebResponse()
+        {
+            return await GetResponse(UnityWebRequestAssetBundle.GetAssetBundle(url, await GetCachedAssetBundle()), progress);
+        }
+
+        protected async override Task<UnityWebRequest> GetCacheResponse()
+        {
+            return await GetResponse(UnityWebRequestAssetBundle.GetAssetBundle(url, await GetCachedAssetBundle()));
+        }
+
+        protected override void HandleResponse(UnityWebRequest response)
+        {
+            onResponse?.Invoke(DownloadHandlerAssetBundle.GetContent(response));
         }
     }
 }

@@ -15,15 +15,29 @@ namespace ru.ididdidi.Unity3D
             return this;
         }
 
-        public override async Task Send()
+        protected override async Task<UnityWebRequest> GetWebResponse()
         {
-            UnityWebRequest request = await Send(UnityWebRequestMultimedia.GetAudioClip(url, audioType), progress);
-            if(request != null)
+            UnityWebRequest responce = await GetResponse(UnityWebRequestMultimedia.GetAudioClip(url, audioType), progress);
+
+            if (CacheService.Caching)
             {
-                AudioClip audioClip = DownloadHandlerAudioClip.GetContent(request);
-                audioClip.name = System.IO.Path.GetFileNameWithoutExtension(request.url);
-                Response(audioClip);
+                CacheService.SeveToCache(url, await GetVersion(), responce.downloadHandler.data) ;
             }
+
+            return responce;
+        }
+
+        protected override async Task<UnityWebRequest> GetCacheResponse()
+        {
+            string path = url.ConvertToCachedPath(await GetVersion());
+            return await GetResponse(UnityWebRequestMultimedia.GetAudioClip(path, audioType));
+        }
+
+        protected override void HandleResponse(UnityWebRequest response)
+        {
+            AudioClip audioClip = DownloadHandlerAudioClip.GetContent(response);
+            audioClip.name = System.IO.Path.GetFileNameWithoutExtension(response.url);
+            onResponse?.Invoke(audioClip);
         }
     }
 }
