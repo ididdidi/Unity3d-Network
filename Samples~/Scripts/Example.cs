@@ -30,7 +30,7 @@ namespace ru.ididdidi.Unity3D {
             string materialsURL = $"file://{path}/materials";
             string prefabURL = $"file://{path}/prefabs";
             string movieUrl = $"file://{path.Replace("AssetBundles", "Resources/Video/Rick Astley - Never Gonna Give You Up(18 seconds).mp4")}";
-
+            
             // Download materials (needed for the prefab)
             downloadManager.Download(new WebRequestAssetBundle(materialsURL).AddResponseHandler((bundle) =>
             {
@@ -41,16 +41,17 @@ namespace ru.ididdidi.Unity3D {
             // Download prefab
             downloadManager.Download(new WebRequestAssetBundle(prefabURL).AddResponseHandler((bundle) =>
             {
-                loadedBundles.Push(bundle);
-                var videoPlayer = Instantiate(bundle.LoadAsset<GameObject>(prefabName)).GetComponent<VideoPlayer>();
-                downloadManager.Download(new WebRequestData(movieUrl).AddResponseHandler((video) =>
-                {
-                    videoPlayer.url = movieUrl;
-                    videoPlayer.source = VideoSource.Url;
-                    videoPlayer.Play();
-                }));
+                 loadedBundles.Push(bundle);
+                 var videoPlayer = Instantiate(bundle.LoadAsset<GameObject>(prefabName)).GetComponent<VideoPlayer>();
 
+                 downloadManager.Download(new WebRequestData(movieUrl).AddResponseHandler((video) =>
+                 {
+                     videoPlayer.url = movieUrl.ConvertToCachedPath(Hash128.Parse("00000000000000000000000000000000"));
+                     videoPlayer.source = VideoSource.Url;
+                     videoPlayer.Play();
+                 }));
             }));
+
         }
 
         private void OnDestroy()

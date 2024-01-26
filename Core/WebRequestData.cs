@@ -1,6 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using UnityEngine.Networking;
+﻿using UnityEngine.Networking;
 
 namespace ru.ididdidi.Unity3D
 {
@@ -8,25 +6,11 @@ namespace ru.ididdidi.Unity3D
     {
         public WebRequestData(string url) : base(url) { }
 
-        protected override async Task<UnityWebRequest> GetWebResponse()
+        public override async void Send()
         {
-            UnityWebRequest responce = await GetResponse(UnityWebRequest.Get(url), progress);
-            if (CacheService.Caching)
-            {
-                CacheService.SeveToCache(url, await GetVersion(), responce.downloadHandler.data);
-            }
-            return responce;
-        }
-
-        protected override async Task<UnityWebRequest> GetCacheResponse()
-        {
-            string path = url.ConvertToCachedPath(await GetVersion());
-            return await GetResponse(UnityWebRequest.Get(path));
-        }
-
-        protected override void HandleResponse(UnityWebRequest response)
-        {
-            onResponse?.Invoke(response.downloadHandler.data);
+            UnityWebRequest request = UnityWebRequest.Get(url);
+            handler?.Invoke(await request.SendWebRequest((response) => response.downloadHandler.data, CancelToken, Progress));
+            request.Dispose();
         }
     }
 }

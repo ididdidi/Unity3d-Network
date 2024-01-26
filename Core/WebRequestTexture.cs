@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
 namespace ru.ididdidi.Unity3D
@@ -8,27 +7,16 @@ namespace ru.ididdidi.Unity3D
     {
         public WebRequestTexture(string url) : base(url) { }
 
-        protected override async Task<UnityWebRequest> GetWebResponse()
+        public override async void Send()
         {
-            UnityWebRequest responce = await GetResponse(UnityWebRequestTexture.GetTexture(url), progress);
-            if (CacheService.Caching)
-            {
-                CacheService.SeveToCache(url, await GetVersion(), responce.downloadHandler.data);
-            }
-            return responce;
-        }
-
-        protected override async Task<UnityWebRequest> GetCacheResponse()
-        {
-            string path = url.ConvertToCachedPath(await GetVersion());
-            return await GetResponse(UnityWebRequestTexture.GetTexture(path));
-        }
-
-        protected override void HandleResponse(UnityWebRequest response)
-        {
-            Texture2D texture = DownloadHandlerTexture.GetContent(response);
-            texture.name = System.IO.Path.GetFileNameWithoutExtension(response.url);
-            onResponse(texture);
+            UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
+            
+            Texture2D texture = await request.SendWebRequest(
+                (response) => DownloadHandlerTexture.GetContent(request), CancelToken, Progress);
+            
+            texture.name = System.IO.Path.GetFileNameWithoutExtension(request.url);
+            handler?.Invoke(texture);
+            request.Dispose();
         }
     }
 }

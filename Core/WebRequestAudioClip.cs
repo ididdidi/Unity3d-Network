@@ -1,43 +1,24 @@
-﻿using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
 namespace ru.ididdidi.Unity3D
 {
     public class WebRequestAudioClip : WebRequest<AudioClip>
     {
-        protected AudioType audioType = AudioType.OGGVORBIS;
-        public WebRequestAudioClip(string url) : base(url) { }
+        AudioType audioType;
 
-        public WebRequestAudioClip SetAudioType(AudioType audioType)
+        public WebRequestAudioClip(string url, AudioType audioType = AudioType.OGGVORBIS) : base(url) { this.audioType = audioType; }
+
+        public override async void Send()
         {
-            this.audioType = audioType;
-            return this;
-        }
+            UnityWebRequest request = UnityWebRequestMultimedia.GetAudioClip(url, audioType);
 
-        protected override async Task<UnityWebRequest> GetWebResponse()
-        {
-            UnityWebRequest responce = await GetResponse(UnityWebRequestMultimedia.GetAudioClip(url, audioType), progress);
+            AudioClip audioClip = await request.SendWebRequest(
+                (response) => DownloadHandlerAudioClip.GetContent(request), CancelToken, Progress);
 
-            if (CacheService.Caching)
-            {
-                CacheService.SeveToCache(url, await GetVersion(), responce.downloadHandler.data) ;
-            }
-
-            return responce;
-        }
-
-        protected override async Task<UnityWebRequest> GetCacheResponse()
-        {
-            string path = url.ConvertToCachedPath(await GetVersion());
-            return await GetResponse(UnityWebRequestMultimedia.GetAudioClip(path, audioType));
-        }
-
-        protected override void HandleResponse(UnityWebRequest response)
-        {
-            AudioClip audioClip = DownloadHandlerAudioClip.GetContent(response);
-            audioClip.name = System.IO.Path.GetFileNameWithoutExtension(response.url);
-            onResponse?.Invoke(audioClip);
+            audioClip.name = System.IO.Path.GetFileNameWithoutExtension(request.url);
+            handler?.Invoke(audioClip);
+            request.Dispose();
         }
     }
 }

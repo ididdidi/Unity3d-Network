@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace ru.ididdidi.Unity3D
@@ -6,8 +7,8 @@ namespace ru.ididdidi.Unity3D
     public class DownloadManager : MonoBehaviour
     {
         private Queue<Hash128> downloadQueue = new Queue<Hash128>();
-        private Dictionary<Hash128, IRequest> requests = new Dictionary<Hash128, IRequest>();
-        private IRequest current;
+        private Dictionary<Hash128, IWebRequest> requests = new Dictionary<Hash128, IWebRequest>();
+        private IWebRequest current;
 
         private void Start()
         {
@@ -16,14 +17,31 @@ namespace ru.ididdidi.Unity3D
 
         public async void Download<T>(WebRequest<T> request)
         {
-            if (await request.IsCached()) { await request.Send(); }
-            else { AddInDownloadQueue(await request.GetVersion(), request); }
+            Hash128 version = await GetVersion(request);
+            if (CacheService.IsCached(request.url, version)) {
+                request.GetFromCache(version);
+            }
+            else { AddInDownloadQueue(version, request); }
+        }
+
+        public async Task<Hash128> GetVersion<T>(WebRequest<T> request)
+        {
+            Hash128 version = default;
+            try
+            {
+                version = await request.GetLatestVersion();
+            }
+            catch
+            {
+                version = CacheService.GetCachedVersion(request.url);
+            }
+            return version; // Реализовать исключение
         }
 
         private void AddInDownloadQueue<T>(Hash128 id, WebRequest<T> request)
         {
-            if (requests.TryGetValue(id, out IRequest value)) {
-                ((WebRequest<T>)value).AddResponseHandler(request.OnResponse);
+            if (requests.TryGetValue(id, out IWebRequest value)) {
+                ((WebRequest<T>)value).AddResponseHandler(request.Handler);
             }
             else
             {
@@ -42,7 +60,12 @@ namespace ru.ididdidi.Unity3D
             {
                 Hash128 id = downloadQueue.Dequeue();
                 current = requests[id];
-                await current.Send();
+                if (CacheService.Caching)
+                {
+                    CacheService.SeveToCache(current.url, id, await current.GetData());
+                    current.GetFromCache(id);
+                }
+                else { current.Send(); }
                 requests.Remove(id);
             }
 
