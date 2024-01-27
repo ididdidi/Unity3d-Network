@@ -10,8 +10,8 @@ namespace ru.ididdidi.Unity3D
         public override async void Send()
         {
             UnityWebRequest request = UnityWebRequestAssetBundle.GetAssetBundle(url);
-            handler?.Invoke(await request.SendWebRequest(
-                (response) => DownloadHandlerAssetBundle.GetContent(request), CancelToken, Progress));
+            Handler?.Invoke(await request.SendWebRequest(
+                (response) => DownloadHandlerAssetBundle.GetContent(request), CancelToken, ProgressHandler));
             request.Dispose();
         }
     }

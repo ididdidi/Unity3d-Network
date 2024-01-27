@@ -41,7 +41,7 @@ namespace ru.ididdidi.Unity3D
         private void AddInDownloadQueue<T>(Hash128 id, WebRequest<T> request)
         {
             if (requests.TryGetValue(id, out IWebRequest value)) {
-                ((WebRequest<T>)value).AddResponseHandler(request.Handler);
+                ((WebRequest<T>)value).AddHandler(request.Handler);
             }
             else
             {
@@ -62,7 +62,7 @@ namespace ru.ididdidi.Unity3D
                 current = requests[id];
                 if (CacheService.Caching)
                 {
-                    CacheService.SeveToCache(current.url, id, await current.GetData());
+                    CacheService.SeveToCache(current.url, id, await UnityNetService.GetData(current.url));
                     current.GetFromCache(id);
                 }
                 else { current.Send(); }

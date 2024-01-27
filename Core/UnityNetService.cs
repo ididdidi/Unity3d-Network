@@ -43,9 +43,9 @@ namespace ru.ididdidi.Unity3D
             }
         }
 
-        public static async Task<long> GetSize(this IWebRequest request)
+        public static async Task<long> GetSize(string url)
         {
-            return await UnityWebRequest.Head(request.url).SendWebRequest((response) =>
+            return await UnityWebRequest.Head(url).SendWebRequest((response) =>
             {
                 string contentLength = response.GetResponseHeader("Content-Length");
                 if (long.TryParse(contentLength, out long returnValue))
@@ -54,17 +54,15 @@ namespace ru.ididdidi.Unity3D
                 }
                 else
                 {
-                    throw new Exception(string.Format("GetSize - {0} {1}", response?.error, request.url));
+                    throw new Exception(string.Format("GetSize - {0} {1}", response?.error, url));
                 }
             });
         }
 
-        public static async Task<Hash128> GetLatestVersion(this IWebRequest request) => Hash128.Compute($"{request.url}{await request.GetSize()}");
-
-        public static async Task<byte[]> GetData(this IWebRequest request)
+        public static async Task<byte[]> GetData(string url, CancellationTokenSource cancelToken = null, System.Action<float> progress = null)
         {
-            return await UnityWebRequest.Get(request.url).SendWebRequest(
-                (response) => response?.downloadHandler.data, request.CancelToken, request.Progress);
+            UnityWebRequest request = UnityWebRequest.Get(url);
+            return await request.SendWebRequest((response) => response.downloadHandler.data, cancelToken, progress);
         }
 
         public class Exception : System.Exception

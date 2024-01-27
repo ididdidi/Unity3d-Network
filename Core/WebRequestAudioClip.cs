@@ -14,10 +14,10 @@ namespace ru.ididdidi.Unity3D
             UnityWebRequest request = UnityWebRequestMultimedia.GetAudioClip(url, audioType);
 
             AudioClip audioClip = await request.SendWebRequest(
-                (response) => DownloadHandlerAudioClip.GetContent(request), CancelToken, Progress);
+                (response) => DownloadHandlerAudioClip.GetContent(request), CancelToken, ProgressHandler);
 
             audioClip.name = System.IO.Path.GetFileNameWithoutExtension(request.url);
-            handler?.Invoke(audioClip);
+            Handler?.Invoke(audioClip);
             request.Dispose();
         }
     }

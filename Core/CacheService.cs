@@ -76,17 +76,15 @@ namespace ru.ididdidi.Unity3D
             request.Send();
         }
 
-        public static string SeveToCache(string url, Hash128 version, byte[] data)
+        public static string SeveToCache(string url, Hash128 version, byte[] data, bool clearOldVersions = true)
         {
             if (CheckFreeSpace(data.Length))
             {
                 string path = url.ConvertToCachedPath(version);
 
                 DirectoryInfo dirInfo = new DirectoryInfo(Application.persistentDataPath);
-                if (!dirInfo.Exists)
-                {
-                    dirInfo.Create();
-                }
+                if (clearOldVersions && dirInfo.Exists) { dirInfo.Delete(true); }
+                dirInfo.Create();
                 dirInfo.CreateSubdirectory(Directory.GetParent(path).FullName);
                 File.WriteAllBytes(path, data);
                 return path;

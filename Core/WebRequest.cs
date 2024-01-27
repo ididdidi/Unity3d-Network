@@ -1,18 +1,14 @@
 ﻿using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace ru.ididdidi.Unity3D
 {
     public abstract partial class WebRequest<T> : IWebRequest
     {
-        protected Hash128 hash = default;
-
-        protected System.Action<T> handler;
-        private System.Action<float> progress;
-
         public string url { get; set; }
-        public System.Action<T> Handler { get => handler; }
-        public System.Action<float> Progress { get => progress; }
+        public System.Action<T> Handler { get; private set; }
+        public System.Action<float> ProgressHandler { get; private set; }
         public CancellationTokenSource CancelToken { get; }
 
         public WebRequest(string url)
@@ -21,23 +17,25 @@ namespace ru.ididdidi.Unity3D
             this.CancelToken = new CancellationTokenSource();
         }
 
+        public async Task<Hash128> GetLatestVersion() => Hash128.Compute($"{url}{await UnityNetService.GetSize(url)}");
+
         public abstract void Send();
 
-        public WebRequest<T> SetProgress(System.Action<float> progress)
+        public WebRequest<T> SetProgressHandler(System.Action<float> progress)
         {
-            this.progress = progress;
+            this.ProgressHandler = progress;
             return this;
         }
 
-        public WebRequest<T> AddResponseHandler(System.Action<T> onResponse)
+        public WebRequest<T> AddHandler(System.Action<T> onResponse)
         {
-            this.handler += onResponse;
+            this.Handler += onResponse;
             return this;
         }
 
-        public WebRequest<T> RemoveResponseHandler(System.Action<T> onResponse)
+        public WebRequest<T> RemoveHandler(System.Action<T> onResponse)
         {
-            this.handler -= onResponse;
+            this.Handler -= onResponse;
             return this;
         }
 

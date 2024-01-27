@@ -12,10 +12,10 @@ namespace ru.ididdidi.Unity3D
             UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
             
             Texture2D texture = await request.SendWebRequest(
-                (response) => DownloadHandlerTexture.GetContent(request), CancelToken, Progress);
+                (response) => DownloadHandlerTexture.GetContent(request), CancelToken, ProgressHandler);
             
             texture.name = System.IO.Path.GetFileNameWithoutExtension(request.url);
-            handler?.Invoke(texture);
+            Handler?.Invoke(texture);
             request.Dispose();
         }
     }
