@@ -3,14 +3,14 @@ using UnityEngine;
 
 namespace ru.ididdidi.Unity3D
 {
-    public static class CacheService
+    public static class UnityCacheService
     {
         private const float MIB = 1048576f;
         private static string cachingDirectory = "cache";
 
         public static bool Caching { get; set; }
 
-        static CacheService() => ConfiguringCaching(cachingDirectory);
+        static UnityCacheService() => ConfiguringCaching(cachingDirectory);
 
         private static void ConfiguringCaching(string directoryName)
         {
@@ -23,16 +23,14 @@ namespace ru.ididdidi.Unity3D
             UnityEngine.Caching.currentCacheForWriting = UnityEngine.Caching.AddCache(path);
         }
 
-        public static string ConvertToCachedPath(this string url, Hash128 version)
+        public static string GetCachedDirectory(this string url)
         {
             if (!string.IsNullOrEmpty(url))
             {
                 string[] path = {
                 Application.persistentDataPath,
                 cachingDirectory,
-                Hash128.Compute(url).ToString(),
-                version.ToString(),
-                Path.GetFileName(url)
+                Hash128.Compute(url).ToString()
             };
                 return Path.Combine(path).Replace("\\", "/");
             }
@@ -42,10 +40,15 @@ namespace ru.ididdidi.Unity3D
             }
         }
 
+        public static string GetCachedPath(this string url, Hash128 version)
+        {
+            return Path.Combine(url.GetCachedDirectory(), version.ToString(), Path.GetFileName(url)).Replace("\\", "/");
+        }
+
         public static Hash128 GetCachedVersion(string url)
         {
             Hash128 version = default;
-            DirectoryInfo dir = new DirectoryInfo(url.ConvertToCachedPath(version));
+            DirectoryInfo dir = new DirectoryInfo(url.GetCachedDirectory());
             if (dir.Exists)
             {
                 System.DateTime lastWriteTime = default;
@@ -54,25 +57,20 @@ namespace ru.ididdidi.Unity3D
                 {
                     if (lastWriteTime < dirs[i].LastWriteTime)
                     {
-                        if (version.isValid && version != default)
-                        {
-                            Directory.Delete(Path.Combine(dir.FullName, version.ToString()), true);
-                        }
                         lastWriteTime = dirs[i].LastWriteTime;
                         version = Hash128.Parse(dirs[i].Name);
                     }
-                    else { Directory.Delete(Path.Combine(dir.FullName, dirs[i].Name), true); }
                 }
             }
             return version;
         }
 
         public static bool IsCached(string url, Hash128 version)
-            => new FileInfo(url.ConvertToCachedPath(version)).Exists;
+            => new FileInfo(url.GetCachedPath(version)).Exists;
 
         public static void GetFromCache(this IWebRequest request, Hash128 version)
         {
-            request.url = request.url.ConvertToCachedPath(version);
+            request.url = request.url.GetCachedPath(version);
             request.Send();
         }
 
@@ -80,11 +78,12 @@ namespace ru.ididdidi.Unity3D
         {
             if (CheckFreeSpace(data.Length))
             {
-                string path = url.ConvertToCachedPath(version);
 
-                DirectoryInfo dirInfo = new DirectoryInfo(Application.persistentDataPath);
+                DirectoryInfo dirInfo = new DirectoryInfo(url.GetCachedDirectory());
                 if (clearOldVersions && dirInfo.Exists) { dirInfo.Delete(true); }
                 dirInfo.Create();
+
+                string path = url.GetCachedPath(version);
                 dirInfo.CreateSubdirectory(Directory.GetParent(path).FullName);
                 File.WriteAllBytes(path, data);
                 return path;

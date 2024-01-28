@@ -18,7 +18,7 @@ namespace ru.ididdidi.Unity3D
 
             while (!request.isDone)
             {
-                if (cancelToken != null && cancelToken.IsCancellationRequested)
+                if (Application.isPlaying && cancelToken != null && cancelToken.IsCancellationRequested)
                 {
                     request.Abort();
                     var url = request.url;
@@ -32,7 +32,7 @@ namespace ru.ididdidi.Unity3D
                 }
             }
 
-            if (!request.isHttpError && !request.isNetworkError)
+            if (Application.isPlaying && !request.isHttpError && !request.isNetworkError)
             {
                 progress?.Invoke(1f);
                 return handler.Invoke(request);
