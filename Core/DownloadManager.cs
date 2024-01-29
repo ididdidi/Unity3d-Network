@@ -72,7 +72,7 @@ namespace ru.ididdidi.Unity3D
                     {
                         byte[] data = await UnityNetService.GetData(current.url);
                         UnityCacheService.SeveToCache(current.url, id, data);
-                        current.GetFromCache(id);
+                        GetFromCache(current, id);
                     }
                     catch (System.Exception eror) 
                     {

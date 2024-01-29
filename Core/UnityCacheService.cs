@@ -8,10 +8,20 @@ namespace ru.ididdidi.Unity3D
         private const float MIB = 1048576f;
         private static string cachingDirectory = "cache";
 
+        /// <summary>
+        /// Flag for caching resources downloaded via a web request.
+        /// </summary>
         public static bool Caching { get; set; }
 
+        /// <summary>
+        /// Static constructor that runs the first time the class is accessed.
+        /// </summary>
         static UnityCacheService() => ConfiguringCaching(cachingDirectory);
 
+        /// <summary>
+        /// Cache configuration method.
+        /// </summary>
+        /// <param name="directoryName">Caching directory name</param>
         private static void ConfiguringCaching(string directoryName)
         {
             cachingDirectory = directoryName;
@@ -23,6 +33,11 @@ namespace ru.ididdidi.Unity3D
             UnityEngine.Caching.currentCacheForWriting = UnityEngine.Caching.AddCache(path);
         }
 
+        /// <summary>
+        /// Returns the full path to the cache directory.
+        /// </summary>
+        /// <param name="url">File URL</param>
+        /// <returns>Full path to the cache directory</returns>
         public static string GetCachedDirectory(this string url)
         {
             if (!string.IsNullOrEmpty(url))
@@ -40,11 +55,22 @@ namespace ru.ididdidi.Unity3D
             }
         }
 
+        /// <summary>
+        /// Method for get a full path to the cache file.
+        /// </summary>
+        /// <param name="url">File URL</param>
+        /// <param name="version">Cached version of the file</param>
+        /// <returns>Full path to the cache file</returns>
         public static string GetCachedPath(this string url, Hash128 version)
         {
             return Path.Combine(url.GetCachedDirectory(), version.ToString(), Path.GetFileName(url)).Replace("\\", "/");
         }
 
+        /// <summary>
+        /// Method for get a cached version of the file.
+        /// </summary>
+        /// <param name="url">File URL</param>
+        /// <returns>Cached version of the file</returns>
         public static Hash128 GetCachedVersion(string url)
         {
             Hash128 version = default;
@@ -65,20 +91,26 @@ namespace ru.ididdidi.Unity3D
             return version;
         }
 
-        public static bool IsCached(string url, Hash128 version)
-            => new FileInfo(url.GetCachedPath(version)).Exists;
+        /// <summary>
+        /// The method that checks whether a file of a given version is in the cache.
+        /// </summary>
+        /// <param name="url">File URL</param>
+        /// <param name="version">Cached version of the file</param>
+        /// <returns>The version file is in the cache</returns>
+        public static bool IsCached(string url, Hash128 version) => new FileInfo(url.GetCachedPath(version)).Exists;
 
-        public static void GetFromCache(this IWebRequest request, Hash128 version)
-        {
-            request.url = request.url.GetCachedPath(version);
-            request.Send();
-        }
-
+        /// <summary>
+        /// A method for storing data in a device's long-term memory.
+        /// </summary>
+        /// <param name="url">File URL</param>
+        /// <param name="version">Cached version of the file</param>
+        /// <param name="data">Data as <see cref="byte[]"/></param>
+        /// <param name="clearOldVersions">Clear previous versions flag</param>
+        /// <returns>File data as <see cref="byte[]"/></returns>
         public static string SeveToCache(string url, Hash128 version, byte[] data, bool clearOldVersions = true)
         {
             if (CheckFreeSpace(data.Length))
             {
-
                 DirectoryInfo dirInfo = new DirectoryInfo(url.GetCachedDirectory());
                 if (clearOldVersions && dirInfo.Exists) { dirInfo.Delete(true); }
                 dirInfo.Create();
@@ -91,6 +123,11 @@ namespace ru.ididdidi.Unity3D
             else { throw new Exception(string.Format("Caching - Not available space to download {0}Mb", data.Length / MIB)); }
         }
 
+        /// <summary>
+        /// Method to check free space on device.
+        /// </summary>
+        /// <param name="sizeInBytes">Required space in bytes</param>
+        /// <returns>Is there enough memory for this length on the device</returns>
         public static bool CheckFreeSpace(float sizeInBytes)
         {
 #if UNITY_EDITOR_WIN
@@ -106,6 +143,9 @@ namespace ru.ididdidi.Unity3D
             return availableSpace > sizeInBytes / MIB;
         }
 
+        /// <summary>
+        /// Exception wrapper.
+        /// </summary>
         public class Exception : System.Exception
         {
             public Exception(string message) : base(message)
