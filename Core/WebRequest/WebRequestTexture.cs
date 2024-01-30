@@ -3,10 +3,20 @@ using UnityEngine.Networking;
 
 namespace ru.ididdidi.Unity3D
 {
+    /// <summary>
+    /// Specialized class for downloading <see cref="Texture2D"/>
+    /// </summary>
     public class WebRequestTexture : WebRequest<Texture2D>
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="url">URL address</param>
         public WebRequestTexture(string url) : base(url) { }
 
+        /// <summary>
+        /// Send a web request to the specified url.
+        /// </summary>
         public override async void Send()
         {
             UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
