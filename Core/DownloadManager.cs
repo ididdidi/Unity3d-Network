@@ -1,14 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using UnityEngine;
 
 namespace ru.ididdidi.Unity3D
 {
     public class DownloadManager : MonoBehaviour
     {
-        private Queue<Hash128> downloadQueue = new Queue<Hash128>();
-        private Dictionary<Hash128, IWebRequest> requests = new Dictionary<Hash128, IWebRequest>();
-        private IWebRequest current;
+        private class Downloading
+        {
+            public Hash128 version;
+            public IWebRequest request;
+        }
+
+        private Downloading current;
+        private DownloadQueue downloadQueue = new DownloadQueue();
 
         private void Start()
         {
@@ -18,19 +22,33 @@ namespace ru.ididdidi.Unity3D
         public async void Download<T>(WebRequest<T> request)
         {
             Hash128 version = await GetVersion(request);
-            if (UnityCacheService.IsCached(request.url, version)) {
-                GetFromCache(request, version);
-            }
-            else { AddInDownloadQueue(version, request); }
+            bool isCached = UnityCacheService.IsCached(request.url, version);
+
+            if (isCached) { request.url = request.url.GetCachedPath(version); }
+
+            downloadQueue.Add(version, request, isCached);
+
+            DownloadResources();
         }
 
-        private void GetFromCache(IWebRequest request, Hash128 version)
+        public async void Cancel<T>(WebRequest<T> request)
         {
-            request.url = request.url.GetCachedPath(version);
-            request.Send();
+            Hash128 version = await GetVersion(request);
+
+            if (downloadQueue.Contains(version))
+            {
+                downloadQueue.Remove(version);
+            }
+
+            if (current != null && current.version.Equals(version))
+            {
+                current.request.Cancel();
+                current = null;
+            }
+
         }
 
-        public async Task<Hash128> GetVersion<T>(WebRequest<T> request)
+        private async Task<Hash128> GetVersion<T>(WebRequest<T> request)
         {
             Hash128 version = default;
             try
@@ -44,43 +62,29 @@ namespace ru.ididdidi.Unity3D
             return version;
         }
 
-        private void AddInDownloadQueue<T>(Hash128 id, WebRequest<T> request)
-        {
-            if (requests.TryGetValue(id, out IWebRequest value)) {
-                ((WebRequest<T>)value).AddHandler(request.Handler);
-            }
-            else
-            {
-                downloadQueue.Enqueue(id);
-                requests.Add(id, request);
-            }
-
-            DownloadResources();
-        }
-
         private async void DownloadResources()
         {
             if (current != null) { return; }
-            
+
+            current = new Downloading();
+
             while (downloadQueue.Count > 0)
             {
-                Hash128 id = downloadQueue.Dequeue();
-                current = requests[id];
+                current.request = downloadQueue.Dequeue(out current.version);
                 if (UnityCacheService.Caching)
                 {
                     try
                     {
-                        byte[] data = await UnityNetService.GetData(current.url);
-                        UnityCacheService.SeveToCache(current.url, id, data);
-                        GetFromCache(current, id);
+                        byte[] data = await UnityNetService.GetData(current.request.url);
+                        UnityCacheService.SeveToCache(current.request.url, current.version, data);
+                        current.request.url = current.request.url.GetCachedPath(current.version);
                     }
                     catch (System.Exception eror) 
                     {
                         Debug.LogError(eror);
                     }
                 }
-                else { current.Send(); }
-                requests.Remove(id);
+                current.request.Send();
             }
 
             current = null;
@@ -89,8 +93,7 @@ namespace ru.ididdidi.Unity3D
         private void OnDestroy()
         {
             downloadQueue?.Clear();
-            requests?.Clear();
-            current?.Cancel();
+            current?.request.Cancel();
         }
     }
 }
