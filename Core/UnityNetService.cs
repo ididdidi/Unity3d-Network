@@ -69,6 +69,11 @@ namespace ru.ididdidi.Unity3D
         /// <returns>Size in bytes</returns>
         public static async Task<long> GetSize(string url)
         {
+            if (url.Contains("file://"))
+            {
+                return new System.IO.FileInfo(new System.Uri(url).LocalPath).Length;
+            }
+
             return await UnityWebRequest.Head(url).SendWebRequest((response) =>
             {
                 string contentLength = response.GetResponseHeader("Content-Length");

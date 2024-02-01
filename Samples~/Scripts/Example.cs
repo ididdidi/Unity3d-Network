@@ -51,7 +51,6 @@ namespace ru.ididdidi.Unity3D {
                      videoPlayer.Play();
                  }));
             }));
-
         }
 
         private void OnDestroy()

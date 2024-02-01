@@ -5,13 +5,7 @@ namespace ru.ididdidi.Unity3D
 {
     public class DownloadManager : MonoBehaviour
     {
-        private class Downloading
-        {
-            public Hash128 version;
-            public IWebRequest request;
-        }
-
-        private Downloading current;
+        private DownloadQueue.Item current;
         private DownloadQueue downloadQueue = new DownloadQueue();
 
         private void Start()
@@ -26,21 +20,21 @@ namespace ru.ididdidi.Unity3D
 
             if (isCached) { request.url = request.url.GetCachedPath(version); }
 
-            downloadQueue.Add(version, request, isCached);
+            downloadQueue.Add<T>(new DownloadQueue.Item(version, request), isCached);
 
             DownloadResources();
         }
 
         public async void Cancel<T>(WebRequest<T> request)
         {
-            Hash128 version = await GetVersion(request);
+            DownloadQueue.Item download = new DownloadQueue.Item(await GetVersion(request), request);
 
-            if (downloadQueue.Contains(version))
+            if (downloadQueue.Contains(download))
             {
-                downloadQueue.Remove(version);
+                downloadQueue.Remove(download);
             }
 
-            if (current != null && current.version.Equals(version))
+            if (current != null && current.version.Equals(download.version))
             {
                 current.request.Cancel();
                 current = null;
@@ -66,12 +60,10 @@ namespace ru.ididdidi.Unity3D
         {
             if (current != null) { return; }
 
-            current = new Downloading();
-
             while (downloadQueue.Count > 0)
             {
-                current.request = downloadQueue.Dequeue(out current.version);
-                if (UnityCacheService.Caching)
+                current = downloadQueue.Dequeue();
+                if (UnityCacheService.Caching && !current.request.url.Contains(Application.persistentDataPath))
                 {
                     try
                     {
