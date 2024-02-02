@@ -3,16 +3,22 @@ using UnityEngine;
 
 namespace ru.ididdidi.Unity3D
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class DownloadManager : MonoBehaviour
     {
         private DownloadQueue.Item current;
         private DownloadQueue downloadQueue = new DownloadQueue();
 
-        private void Start()
-        {
-            UnityCacheService.Caching = true;
-        }
+        // Start is called before the first frame update
+        private void Start() => UnityCacheService.Caching = true;
 
+        /// <summary>
+        /// Method for adding download requests.
+        /// </summary>
+        /// <typeparam name="T">Type of downloaded resource</typeparam>
+        /// <param name="request">Web request to download a resource</param>
         public async void Download<T>(WebRequest<T> request)
         {
             Hash128 version = await GetVersion(request);
@@ -25,13 +31,18 @@ namespace ru.ididdidi.Unity3D
             DownloadResources();
         }
 
+        /// <summary>
+        /// Method for canceling resource loading.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="request"></param>
         public async void Cancel<T>(WebRequest<T> request)
         {
             DownloadQueue.Item download = new DownloadQueue.Item(await GetVersion(request), request);
 
             if (downloadQueue.Contains(download))
             {
-                downloadQueue.Remove(download);
+                downloadQueue.Remove<T>(download);
             }
 
             if (current != null && current.version.Equals(download.version))
@@ -42,6 +53,12 @@ namespace ru.ididdidi.Unity3D
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="request"></param>
+        /// <returns></returns>
         private async Task<Hash128> GetVersion<T>(WebRequest<T> request)
         {
             Hash128 version = default;
@@ -56,6 +73,9 @@ namespace ru.ididdidi.Unity3D
             return version;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private async void DownloadResources()
         {
             if (current != null) { return; }
@@ -78,10 +98,12 @@ namespace ru.ididdidi.Unity3D
                 }
                 current.request.Send();
             }
-
             current = null;
         }
 
+        /// <summary>
+        /// Method to release resources and cancel downloads.
+        /// </summary>
         private void OnDestroy()
         {
             downloadQueue?.Clear();
