@@ -1,4 +1,6 @@
-﻿namespace ru.ididdidi.Unity3D
+﻿using System.Threading;
+
+namespace ru.ididdidi.Unity3D
 {
     /// <summary>
     /// Interface for interacting with a web request.
@@ -9,6 +11,10 @@
         /// URL address.
         /// </summary>
         string url { get; set; }
+        /// <summary>
+        /// Token to cancel request.
+        /// </summary>
+        CancellationTokenSource CancelToken { get; }
         /// <summary>
         /// Send a web request to the specified url.
         /// </summary>

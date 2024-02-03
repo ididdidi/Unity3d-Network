@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace ru.ididdidi.Unity3D
@@ -27,7 +26,7 @@ namespace ru.ididdidi.Unity3D
             public Item(Hash128 version, IWebRequest request)
             {
                 this.version = version;
-                this.request = request ?? throw new ArgumentNullException(nameof(request));
+                this.request = request ?? throw new System.ArgumentNullException(nameof(request));
             }
 
             /// <summary>
@@ -94,6 +93,9 @@ namespace ru.ididdidi.Unity3D
         /// <returns>Queue element</returns>
         public Item Dequeue()
         {
+            if(heap == null) { throw new System.Exception("The top of the queue points to null. " +
+                "Add a request to the queue before accessing it or check if there is at least one item in it."); }
+
             lock (deque)
             {
                 Item item = heap?.Value;

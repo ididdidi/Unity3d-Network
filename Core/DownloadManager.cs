@@ -1,15 +1,18 @@
 ﻿using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ru.ididdidi.Unity3D
 {
     /// <summary>
-    /// 
+    /// A class that controls adding a request to the queue and loading it.
     /// </summary>
     public class DownloadManager : MonoBehaviour
     {
         private DownloadQueue.Item current;
         private DownloadQueue downloadQueue = new DownloadQueue();
+
+        [SerializeField] private Image progressView;
 
         // Start is called before the first frame update
         private void Start() => UnityCacheService.Caching = true;
@@ -25,6 +28,7 @@ namespace ru.ididdidi.Unity3D
             bool isCached = UnityCacheService.IsCached(request.url, version);
 
             if (isCached) { request.url = request.url.GetCachedPath(version); }
+            else { request.SetProgressHandler(SetProgress); }
 
             downloadQueue.Add<T>(new DownloadQueue.Item(version, request), isCached);
 
@@ -34,8 +38,8 @@ namespace ru.ididdidi.Unity3D
         /// <summary>
         /// Method for canceling resource loading.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="request"></param>
+        /// <typeparam name="T">Type of downloaded resource</typeparam>
+        /// <param name="request">Web request to download a resource</param>
         public async void Cancel<T>(WebRequest<T> request)
         {
             DownloadQueue.Item download = new DownloadQueue.Item(await GetVersion(request), request);
@@ -53,11 +57,20 @@ namespace ru.ididdidi.Unity3D
 
         }
 
+        private void SetProgress(float progress)
+        {
+            if (progressView)
+            {
+                progressView.fillAmount = progress;
+                if(progress == 1) { progressView.fillAmount = 0f; }
+            }
+        }
+
         /// <summary>
-        /// 
+        /// Method for getting the latest available version of a downloadable resource.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="request"></param>
+        /// <typeparam name="T">Web request to download a resource</typeparam>
+        /// <param name="request">Web request to download a resource</param>
         /// <returns></returns>
         private async Task<Hash128> GetVersion<T>(WebRequest<T> request)
         {
@@ -74,7 +87,7 @@ namespace ru.ididdidi.Unity3D
         }
 
         /// <summary>
-        /// 
+        /// Method for downloading a resource.
         /// </summary>
         private async void DownloadResources()
         {
@@ -87,7 +100,7 @@ namespace ru.ididdidi.Unity3D
                 {
                     try
                     {
-                        byte[] data = await UnityNetService.GetData(current.request.url);
+                        byte[] data = await UnityNetService.GetData(current.request.url, current.request.CancelToken, SetProgress);
                         UnityCacheService.SeveToCache(current.request.url, current.version, data);
                         current.request.url = current.request.url.GetCachedPath(current.version);
                     }
