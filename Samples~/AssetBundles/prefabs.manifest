@@ -1,0 +1,32 @@
+ManifestFileVersion: 0
+CRC: 2223640772
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: da1bb33be1db0affe5268888424aa3a6
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 11f88620f1a2d74324070a1d1cc78f2c
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 328
+  Script: {instanceID: 0}
+- Class: 329
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/Code/Network/Samples/Resources/Prefabs/RickCube.prefab
+Dependencies:
+- D:/UnityProjects/[Modules]/Unity3d-download-resources/Assets/Code/Network/Samples/AssetBundles/materials
