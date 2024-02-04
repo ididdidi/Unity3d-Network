@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ru.ididdidi.Unity3D
+namespace UnityNetwork
 {
     /// <summary>
     /// A class that controls adding a request to the queue and loading it.

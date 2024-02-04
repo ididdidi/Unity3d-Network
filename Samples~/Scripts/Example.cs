@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Video;
 
-namespace ru.ididdidi.Unity3D {
+namespace UnityNetwork {
     public class Example : MonoBehaviour
     {
         private string materialName = "VideoMaterial";

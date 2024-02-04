@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace ru.ididdidi.Unity3D
+namespace UnityNetwork
 {
     /// <summary>
     /// Interface for interacting with a web request.

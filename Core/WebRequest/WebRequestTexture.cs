@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
 
-namespace ru.ididdidi.Unity3D
+namespace UnityNetwork
 {
     /// <summary>
     /// Specialized class for downloading <see cref="Texture2D"/>
