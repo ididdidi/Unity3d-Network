@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace ru.ididdidi.Unity3D
+namespace UnityNetwork
 {
     /// <summary>
     /// Base wrapper class for UnityWebRequest.

@@ -1,4 +1,4 @@
-﻿namespace ru.ididdidi.Unity3D
+﻿namespace UnityNetwork
 {
     /// <summary>
     /// A specialized class for passing a link to a video stream as <see. cref="string"/>

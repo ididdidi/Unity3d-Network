@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using UnityEngine;
 
-namespace ru.ididdidi.Unity3D
+namespace UnityNetwork
 {
     public static class UnityCacheService
     {

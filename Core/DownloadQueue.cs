@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace ru.ididdidi.Unity3D
+namespace UnityNetwork
 {
     /// <summary>
     /// Priority queue for loading resources.
